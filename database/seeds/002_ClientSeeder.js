@@ -29,10 +29,10 @@ class ClientSeeder {
       name: 'Lucas',
       surname: 'Keiti',
       email: 'lucas@email.com',
-      password: 'secret'
+      password: '12345678'
     })
     const adminRole = await Role.findBy('slug', 'admin')
-    await user.roles().attach([role.id])
+    await user.roles().attach([adminRole.id])
   }
 }
 
