@@ -15,7 +15,7 @@ class PasswordResetSchema extends Schema {
       table.datetime('expired_at')
       table.timestamps()
 
-      tablle
+      table
         .foreign('email')
         .references('email')
         .inTable('users')

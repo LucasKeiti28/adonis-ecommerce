@@ -52,7 +52,7 @@ class ProductSchema extends Schema {
       table
         .foreign('category_id')
         .references('id')
-        .inTable('categorys')
+        .inTable('categories')
         .onDelete('cascade')
     })
   }
