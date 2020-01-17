@@ -1,0 +1,22 @@
+'use strict'
+
+const OrderHook = (exports = module.exports = {})
+
+OrderHook.updatedValues = async model => {
+  model.$sideLoaded.subtotal = await model.items().getSum('subtotal')
+
+  // Its not permited to have a name variable equal one name relationship.
+  model.$sideLoaded.qty_items = await model.items().getSum('quantity')
+
+  model.$sideLoaded.discount = await model.discounts().getSum('discount')
+
+  model.total = model.$sideLoaded.subtotal - model.$sideLoaded.discount
+}
+
+OrderHook.updateCollectionValues = async models => {
+  // await models.map(model => OrderHook.updatedValues(model))
+
+  for (let model of models) {
+    model = await OrderHook.updatedValues(model)
+  }
+}
