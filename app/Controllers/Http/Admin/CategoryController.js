@@ -65,7 +65,11 @@ class CategoryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params, request, response, view }) {}
+  async show({ params: { id }, request, response }) {
+    const category = await Category.findOrFail(id)
+
+    return response.send({ category })
+  }
 
   /**
    * Render a form to update an existing category.
@@ -76,17 +80,18 @@ class CategoryController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async edit({ params, request, response, view }) {}
 
-  /**
-   * Update category details.
-   * PUT or PATCH categories/:id
-   *
-   * @param {object} ctx
-   * @param {Request} ctx.request
-   * @param {Response} ctx.response
-   */
-  async update({ params, request, response }) {}
+  async update({ params: { id }, request, response }) {
+    const category = await Category.findOrFail(id)
+
+    const { title, description, image_id } = request.all()
+
+    category.merge({ title, description, image_id })
+
+    await category.save()
+
+    return response.status(200).send({ category })
+  }
 
   /**
    * Delete a category with id.
@@ -96,7 +101,14 @@ class CategoryController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({ params, request, response }) {}
+  async destroy({ params: { id }, request, response }) {
+    const category = await Category.findOrFail(id)
+
+    await category.delete()
+    return response
+      .status(204)
+      .send({ message: 'Categoria excluida com sucesso.' })
+  }
 }
 
 module.exports = CategoryController
