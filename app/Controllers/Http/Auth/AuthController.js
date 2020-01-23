@@ -2,23 +2,22 @@
 
 const Database = use('Database')
 const User = use('App/Models/User')
-const Role = use('App/Models/Role')
+const Role = use('Role')
 
 class AuthController {
   async register({ request, response }) {
-    const trx = Database.beginTransaction()
-
+    const trx = await Database.beginTransaction()
     try {
       const { name, surname, email, password } = request.all()
 
       const user = await User.create({ name, surname, email, password }, trx)
-      const userRole = await Role.findBy('slug', 'client')
 
+      const userRole = await Role.findBy('slug', 'client')
       await user.roles().attach([userRole.id], null, trx)
 
       await trx.commit()
 
-      return response.status(401).send({ data: user })
+      return response.status(201).send({ data: user })
     } catch (error) {
       await trx.rollback()
 
@@ -59,7 +58,7 @@ class AuthController {
 
     await auth.authenticator('jwt').revokeTokens([refresh_token], true)
 
-    return response.status(204).send({})
+    return response.status(204).send({ message: 'Logout Realizado' })
   }
 
   // Requisicao de Nova senha

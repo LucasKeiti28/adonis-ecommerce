@@ -20,11 +20,13 @@ Route.get('/', () => {
   return { greeting: 'Hello world in JSON' }
 })
 
-// Importa as rotas de autenticacao.
 require('./auth')
 
-// Import as rotas de admin.
 require('./admin')
 
-// Importa as rotas de clientes.
 require('./clients')
+
+Route.post('registers', ({ request, response }) => {
+  const { name } = request.all()
+  return response.send({ name })
+})

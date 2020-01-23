@@ -21,7 +21,9 @@ class User extends Model {
     })
   }
 
-  // Oculta os campos definidos no retorno, das queries no DB.
+  /**
+   * Oculta os campos definidos no retorno, das queries no DB
+   */
   static get hidden() {
     return ['password']
   }
