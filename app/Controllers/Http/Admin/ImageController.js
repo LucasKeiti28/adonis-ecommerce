@@ -6,6 +6,7 @@
 
 const Image = use('App/Models/Image')
 const { manage_single_upload, manage_multiple_uploads } = use('App/Helpers')
+const fs = use('fs')
 
 /**
  * Resourceful controller for interacting with images
@@ -98,7 +99,11 @@ class ImageController {
    * @param {Response} ctx.response
    * @param {View} ctx.view
    */
-  async show({ params, request, response, view }) {}
+  async show({ params: { id }, request, response, view }) {
+    const image = await Image.findOrFail(id)
+
+    return response.send(image)
+  }
 
   /**
    * Update image details.
@@ -108,7 +113,20 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {}
+  async update({ params, request, response }) {
+    const image = await Image.findOrFail(id)
+    const { original_name } = request.all()
+
+    try {
+      image.merge({ original_name })
+      await image.save()
+      return response.status(200).send(image)
+    } catch (error) {
+      return response
+        .status(400)
+        .send({ message: 'Nao foi possivel atualizar a imagem.' })
+    }
+  }
 
   /**
    * Delete a image with id.
@@ -118,7 +136,21 @@ class ImageController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async destroy({ params, request, response }) {}
+  async destroy({ params: {id}, request, response }) {
+    const image = await Image.findOrFail(id)
+
+    try {
+      let filepath = Helpers.publicPath(`uploads/${image.path}`)
+
+      await fs.unlink(filepath, err => {
+        if (!err) await image.delete()
+      })
+
+      return response.status(204).send()
+    } catch (error) {
+      return response.status(400).send({message: 'Nao foi possivel deletar a imagem no momento.'})
+    }
+  }
 }
 
 module.exports = ImageController
