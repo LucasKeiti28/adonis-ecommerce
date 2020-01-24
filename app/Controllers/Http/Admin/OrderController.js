@@ -5,6 +5,8 @@
 /** @typedef {import('@adonisjs/framework/src/View')} View */
 
 const Order = use('App/Models/Order')
+const Coupon = use('App/Models/Coupon')
+const Discount = use('App/Models/Discount')
 const Database = use('Database')
 const Service = use('App/Services/Order/OrderService')
 
@@ -139,6 +141,49 @@ class OrderController {
         .status(400)
         .send({ message: 'Nao foi possivel deletar o pedido' })
     }
+  }
+
+  async applyDiscount({ params: { id }, request, response }) {
+    const { code } = request.all()
+    const coupon = await Coupon.findByOrFail('code', code.toUpperCase())
+    const order = await Order.findOrFail(id)
+
+    var discount,
+      info = {}
+    try {
+      const service = new Service(order)
+      const canAddDiscount = await service.canApplyDiscount(coupon)
+      const orderDiscount = await order.cupons().getCount()
+      const canApplyToOrder =
+        orderDiscount < 1 || (orderDiscount >= 1 && coupon.recursive)
+      if (canAddDiscount && canApplyToOrder) {
+        discount = await Discount.findOrCreate({
+          order_id: order.id,
+          coupon_id: coupon.id,
+          discount
+        })
+        info.message = 'Cupom Aplicado com Sucesso.'
+        info.success = true
+      } else {
+        info.message = 'Nao foi possivel aplicar esse cupom'
+        info.success = false
+      }
+      return response.send({ order, info })
+    } catch (error) {
+      return response
+        .status(400)
+        .send({ message: 'Nao foi possivel cadastrar o desconto' })
+    }
+  }
+
+  async removeDiscount({ params, request, response }) {
+    // discount_id e' o id do pedido.
+    const { discount_id } = request.all()
+    const discount = await Discount.findOrFail(discount_id)
+
+    await discount.delete()
+
+    return response.status(204).send()
   }
 }
 

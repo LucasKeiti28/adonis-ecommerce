@@ -47,6 +47,19 @@ class OrderService {
 
   // Verifica se o usuario pode aplicar o desconto em um determinado pedido
   async canApplyDiscount(coupon) {
+    // verifica a validade por data.
+    const now = new Date().getTime()
+    if (
+      now > coupon.valid_from.getTime() ||
+      (typeof coupon.valid_until == 'object' &&
+        coupon.valid_until.getTime() < now)
+    ) {
+      // verifica se o cupom ja entrou no periodo valido
+      // verifica se ha uma data de expiracao
+      // se houver a data de expiracao, ele ira verificar se a data de expiracao e' menor do que hoje.
+
+      return false
+    }
     const couponProducts = await Database.from('coupon_products')
       .where('coupon_id', coupon.id)
       .pluck('product_id')
@@ -65,7 +78,6 @@ class OrderService {
       /**
        * Caso nao esteja associado a um cliente ou produco especifico, o uso eh livre.
        */
-
       return true
     }
 
