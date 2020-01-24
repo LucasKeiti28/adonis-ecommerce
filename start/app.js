@@ -25,7 +25,8 @@ const providers = [
 
 /*
 |--------------------------------------------------------------------------
-| Ace Providers
+|
+ Providers
 |--------------------------------------------------------------------------
 |
 | Ace providers are required only when running ace commands. For example

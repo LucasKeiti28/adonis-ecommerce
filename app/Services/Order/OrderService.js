@@ -50,7 +50,7 @@ class OrderService {
     // verifica a validade por data.
     const now = new Date().getTime()
     if (
-      now > coupon.valid_from.getTime() ||
+      now < coupon.valid_from.getTime() ||
       (typeof coupon.valid_until == 'object' &&
         coupon.valid_until.getTime() < now)
     ) {
