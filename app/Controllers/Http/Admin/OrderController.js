@@ -6,6 +6,7 @@
 
 const Order = use('App/Models/Order')
 const Database = use('Database')
+const Service = use('App/Services/Order/OrderService')
 
 /**
  * Resourceful controller for interacting with orders
@@ -46,7 +47,27 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async store({ request, response }) {}
+  async store({ request, response }) {
+    const trx = await Database.beginTransaction()
+
+    try {
+      const { user_id, items, status } = request.all()
+      let order = await Order.create({ user_id, status }, trx)
+
+      service = new Service(order, trx)
+
+      if (items && items.length > 0) await service.syncItems(items)
+
+      await trx.commit()
+
+      return response.status(201).send(order)
+    } catch (error) {
+      await trx.rollback()
+      return response
+        .status(400)
+        .send({ message: 'Nao foi possivel criar o pedido no momento' })
+    }
+  }
 
   /**
    * Display a single order.
@@ -70,7 +91,28 @@ class OrderController {
    * @param {Request} ctx.request
    * @param {Response} ctx.response
    */
-  async update({ params, request, response }) {}
+  async update({ params: { id }, request, response }) {
+    const order = await Order.findOrFail(id)
+    const trx = await Database.beginTransaction()
+
+    try {
+      const { user_id, items, status } = request.all()
+      order.merge({ user_id, status }, trx)
+
+      const service = new Service(order, trx)
+      await service.updateItems(items)
+
+      await order.save(trx)
+      await trx.commit()
+
+      return response.status(200).send(order)
+    } catch (error) {
+      await trx.rollback()
+      return response
+        .status(400)
+        .send({ message: 'Erro ao atualizar o pedido, tente novamente' })
+    }
+  }
 
   /**
    * Delete a order with id.
