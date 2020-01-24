@@ -75,7 +75,38 @@ class CouponController {
 
       // Iniciando service layer
       const service = new Service(coupon, trx)
-    } catch (error) {}
+
+      // Inserindo os relacionamentos no Banco de Dados.
+      if (users && users.length > 0) {
+        await service.syncUsers(users)
+        can_use_for.client = true
+      }
+
+      if (products && products.length > 0) {
+        await service.syncProducts(products)
+        can_use_for.product = true
+      }
+
+      if (can_use_for.client && can_use_for.product) {
+        coupon.can_use_for = 'product_client'
+      } else if (!can_use_for.client && can_use_for.product) {
+        coupon.can_use_for = 'product'
+      } else if (can_use_for.client && !can_use_for.product) {
+        coupon.can_use_for = 'client'
+      } else {
+        coupon.can_use_for = 'all'
+      }
+
+      await coupon.save(trx)
+      await trx.commit()
+
+      return response.status(201).send(coupon)
+    } catch (error) {
+      await trx.rollback()
+      return response
+        .status(401)
+        .send({ message: 'Cupom nao cadastrado, tente novamente.' })
+    }
   }
 
   /**
