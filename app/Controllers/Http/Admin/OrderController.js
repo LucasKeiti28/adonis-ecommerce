@@ -28,8 +28,7 @@ class OrderController {
     const query = Order.query()
 
     if (status && id) {
-      query.where('status', status)
-      query.orWhere('id', 'ILIKE', `%${id}%`)
+      query.where('status', status).orWhere('id', 'ILIKE', `%${id}%`)
     } else if (status) {
       query.where('status', status)
     } else if (id) {

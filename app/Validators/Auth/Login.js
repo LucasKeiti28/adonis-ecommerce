@@ -7,6 +7,12 @@ class Login {
       password: 'required'
     }
   }
+
+  // get messages(){
+  //   return{
+  //     'email.required': 'O email ja existe'
+  //   }
+  // }
 }
 
 module.exports = Login
