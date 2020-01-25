@@ -11,8 +11,12 @@ class Pagination {
    */
   async handle(ctx, next) {
     if (ctx.request.method() === 'GET') {
-      const page = parseInt(ctx.request.input('page'))
-      const limit = parseInt(ctx.request.input('limit'))
+      const page = ctx.request.input('page')
+        ? parseInt(ctx.request.input('page'))
+        : 1
+      const limit = ctx.request.input('limit')
+        ? parseInt(ctx.request.input('limit'))
+        : 10
 
       // Atribui os valores de page e limit (via Get) para a prop pagination.
       ctx.pagination = { limit, page }
