@@ -14,6 +14,10 @@ class CategoryTransformer extends BumblebeeTransformer {
     return ['image']
   }
 
+  // availableInclude() {
+  //   return []
+  // }
+
   /**
    * This method is used to transform the data.
    */
