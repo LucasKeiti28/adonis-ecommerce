@@ -1,6 +1,8 @@
 'use strict'
 
 const Order = use('App/Models/Order')
+const Coupon = use('App/Models/Coupon')
+const Discount = use('App/Models/Discount')
 const Transformer = use('App/Transformer/Admin/OrderTransformer')
 const Database = use('Database')
 const Service = use('App/Services/Order/OrderService')
@@ -104,6 +106,57 @@ class OrderController {
         .status(400)
         .send({ message: 'Nao foi possivel atualizar o pedido.' })
     }
+  }
+
+  async applyDiscount({ params: { id }, request, response, transform, auth }) {
+    const { code } = request.all()
+    const coupon = await Coupon.findByOrFail('code', code.toUpperCase())
+    const client = await auth.getUser()
+    const order = await Order.query()
+      .where('user_id', client.id)
+      .where('id', id)
+      .firstOrFail()
+
+    var discount,
+      info = {}
+
+    try {
+      const service = new Service(order)
+      const canAddDiscount = await service.canApplyDiscount(coupon)
+      const orderDiscounts = await Order.coupons().getCount()
+
+      const canApplyToOrder =
+        orderDiscounts < 1 || (orderDiscounts >= 1 && coupon.recusrive)
+
+      if (canAddDiscount && canApplyToOrder) {
+        discount = await Discount.findOrCreate({
+          order_id: order.id,
+          coupon_id: coupon.id
+        })
+
+        info.message = 'Cupom aplicado com sucesso'
+        info.success = true
+      } else {
+        info.message = 'Nao foi possivel aplicar o cupom'
+        info.success = false
+      }
+
+      order = await transform
+        .include('coupons, items, discounts')
+        .item(order, Transformer)
+
+      return response.status(200).send({ order, info })
+    } catch (error) {
+      return response.status(400).send({ message: 'Erro desconhecido.' })
+    }
+  }
+
+  async removeDiscount({ params: { id }, request, response }) {
+    const { discount_id } = request.all()
+    const discount = await Discount.findOrFail(discount_id)
+    await discount.delete()
+
+    return response.status(204).send()
   }
 }
 
