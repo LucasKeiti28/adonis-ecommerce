@@ -14,10 +14,13 @@ class ImageTransformer extends BumblebeeTransformer {
    */
   transform(image) {
     // toJSON
-    image = image.toJSON()
+    image = imagwe.toJSON()
     return {
       id: image.id,
-      url: image.url
+      url: image.url,
+      size: image.size,
+      original_name: image.original_name,
+      extension: image.extension
     }
   }
 }
