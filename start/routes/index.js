@@ -20,6 +20,13 @@ const Route = use('Route')
 //   return { greeting: 'Hello world in JSON' }
 // })
 
+/**
+ * Retorna o usuario logado atualmente
+ */
+Route.get('v1/me', 'UserController.me')
+  .as('me')
+  .middleware('auth')
+
 require('./auth')
 
 require('./admin')
